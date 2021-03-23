@@ -27,7 +27,8 @@ class StripeApiHandler {
 
   String apiVersion = DEFAULT_API_VERSION;
 
-  static const String MALFORMED_RESPONSE_MESSAGE = 'An improperly formatted error response was found.';
+  static const String MALFORMED_RESPONSE_MESSAGE =
+      'An improperly formatted error response was found.';
 
   final http.Client _client = http.Client();
 
@@ -35,13 +36,17 @@ class StripeApiHandler {
 
   StripeApiHandler({this.stripeAccount});
 
-  Future<Map<String, dynamic>> request(RequestMethod method, String path, String key, String apiVersion,
+  Future<Map<String, dynamic>> request(
+      RequestMethod method, String path, String key, String apiVersion,
       {final Map<String, dynamic> params}) {
-    final options = RequestOptions(key: key, apiVersion: apiVersion, stripeAccount: stripeAccount);
-    return _getStripeResponse(method, LIVE_API_PATH + path, options, params: params);
+    final options = RequestOptions(
+        key: key, apiVersion: apiVersion, stripeAccount: stripeAccount);
+    return _getStripeResponse(method, LIVE_API_PATH + path, options,
+        params: params);
   }
 
-  Future<Map<String, dynamic>> _getStripeResponse(RequestMethod method, final String url, final RequestOptions options,
+  Future<Map<String, dynamic>> _getStripeResponse(
+      RequestMethod method, final String url, final RequestOptions options,
       {final Map<String, dynamic> params}) async {
     final headers = _headers(options: options);
 
@@ -53,19 +58,19 @@ class StripeApiHandler {
         if (params != null && params.isNotEmpty) {
           fUrl = '$url?${_encodeMap(params)}';
         }
-        response = await _client.get(fUrl, headers: headers);
+        response = await _client.get(Uri.parse(fUrl), headers: headers);
         break;
 
       case RequestMethod.post:
         response = await _client.post(
-          url,
+          Uri.parse(url),
           headers: headers,
           body: params != null ? _urlEncodeMap(params) : null,
         );
         break;
 
       case RequestMethod.delete:
-        response = await _client.delete(url, headers: headers);
+        response = await _client.delete(Uri.parse(url), headers: headers);
         break;
       default:
         throw Exception('Request Method: $method not implemented');
@@ -78,7 +83,8 @@ class StripeApiHandler {
     try {
       resp = json.decode(response.body);
     } catch (error) {
-      final stripeError = StripeApiError(requestId, {StripeApiError.FIELD_MESSAGE: MALFORMED_RESPONSE_MESSAGE});
+      final stripeError = StripeApiError(requestId,
+          {StripeApiError.FIELD_MESSAGE: MALFORMED_RESPONSE_MESSAGE});
       throw StripeApiException(stripeError);
     }
 
@@ -132,7 +138,8 @@ class StripeApiHandler {
 
   static String _encodeMap(Map<String, dynamic> params) {
     return params.keys
-        .map((key) => '${Uri.encodeComponent(key)}=${Uri.encodeComponent(params[key].toString())}')
+        .map((key) =>
+            '${Uri.encodeComponent(key)}=${Uri.encodeComponent(params[key].toString())}')
         .join('&');
   }
 
